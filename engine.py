@@ -24,7 +24,8 @@ class Engine:
                 return result
             for i in a_tags:
                 data_dict = {}
-                inside_soup = self.get_soup(i['href'], headers)
+                inside_url = i['href']
+                inside_soup = self.get_soup(inside_url, headers)
 
                 if meta_data['title_tag'] != "":
                     title = inside_soup.select(meta_data['title_tag'])[0].text
@@ -62,6 +63,7 @@ class Engine:
                 else:
                     img_tag = ""
                 data_dict['img_tag'] = img_tag
+                data_dict['url'] = inside_url
 
                 result.append(data_dict)
             self.page = self.page + 1
