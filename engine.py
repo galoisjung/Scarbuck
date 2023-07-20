@@ -67,6 +67,7 @@ class Engine:
 
                 result.append(data_dict)
             self.page = self.page + 1
+
     @staticmethod
     def get_soup(url, headers, params=None):
         if params is None:
