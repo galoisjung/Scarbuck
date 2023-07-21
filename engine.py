@@ -4,6 +4,7 @@ import requests as requests
 from bs4 import BeautifulSoup as bs
 
 from urllib.parse import urlparse, parse_qs
+import hashlib
 
 
 class Engine:
@@ -30,18 +31,25 @@ class Engine:
             for i in a_tags:
                 data_dict = {}
                 inside_url = i['href']
+
+                if inside_url.startswith('/'):
+                    p = urlparse(url)
+                    inside_url = p.scheme + "://" + p.netloc + inside_url
+                print(inside_url)
+
                 inside_soup = self.get_soup(inside_url, headers)
 
-                if meta_data['title_tag'] != "":
-                    title = inside_soup.select(meta_data['title_tag'])[0].text
-                else:
-                    title = ""
+                title = self.tag_classifier('title_tag', inside_soup, meta_data)
                 data_dict['title'] = title
-                if meta_data['author_tag'] != "":
-                    author = inside_soup.select(meta_data['author_tag'])[0].text
-                else:
-                    author = ""
+                author = self.tag_classifier('author_tag', inside_soup, meta_data)
                 data_dict['author'] = author
+                write_date = self.tag_classifier('write_date_tag', inside_soup, meta_data)
+                data_dict['write_date'] = write_date
+                contents = self.tag_classifier('contents_tag', inside_soup, meta_data)
+                data_dict['contents'] = contents
+                image = self.tag_classifier('img_tag', inside_soup, meta_data)
+                data_dict['image'] = image
+
                 if meta_data['download_tag'] != "":
                     download = []
                     download_raw = inside_soup.select(meta_data['download_tag'])
@@ -53,25 +61,14 @@ class Engine:
                 else:
                     download = []
                 data_dict['download'] = download
-                if meta_data['write_date_tag'] != "":
-                    write_date = inside_soup.select(meta_data['write_date_tag'])[0].text
+                if common_data['identifier'] != "":
+                    identifier = common_data['identifier']
+                    q = urlparse(inside_url).query
+                    identifier = parse_qs(q)[identifier][0]
                 else:
-                    write_date = ""
-                data_dict['write_date'] = write_date
-                if meta_data['contents_tag'] != "":
-                    contents = inside_soup.select(meta_data['contents_tag'])[0].text
-                else:
-                    contents = ""
-                data_dict['contents'] = contents
-                if meta_data['img_tag'] != "":
-                    img_tag = inside_soup.select(meta_data['img_tag'])[0].text
-                else:
-                    img_tag = ""
-                identifier = common_data['identifier']
-                q = urlparse(inside_url).query
-                identifier = parse_qs(q)[identifier]
-                data_dict['identifier'] = identifier[0]
-                data_dict['img_tag'] = img_tag
+                    b = bytes(inside_url, 'utf-8')
+                    identifier = int.from_bytes(hashlib.sha256(b).digest()[:4], 'little')
+                data_dict['identifier'] = identifier
                 data_dict['inside_url'] = inside_url
 
                 result.append(data_dict)
@@ -88,3 +85,11 @@ class Engine:
         soup = bs(respond.text, 'lxml')
 
         return soup
+
+    def tag_classifier(self, tag, inside_soup, meta_data):
+        if meta_data[tag] != "" and inside_soup.select(meta_data[tag]):
+            result = inside_soup.select(meta_data[tag])[0].text
+        else:
+            result = ""
+
+        return result

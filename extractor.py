@@ -22,7 +22,7 @@ class Extractor:
                                  common_data['m_cd'],
                                  common_data['s_cd'],
                                  common_data['menu_cd'],
-                                 identifier)
+                                 str(identifier))
         self.file_path = file_path
         self.data_dict['attach_file'] = []
         # 나중에 count 수정 필요, 경로 관련 정리 필요.
@@ -55,7 +55,7 @@ class Extractor:
         result = dict()
         save_path = self.config['scraping']['save_path']
         common_data = self.db_data['common_data']
-        result['id'] = "fcms_" + common_data['s_cd'] + "_" + common_data['menu_cd'] + "_" + self.identifier
+        result['id'] = "fcms_" + common_data['s_cd'] + "_" + common_data['menu_cd'] + "_" + str(self.identifier)
         result['biz_l_cd'] = ""
         result['biz_m_cd'] = ""
         result['biz_s_cd'] = ""

@@ -2,24 +2,24 @@
     "common_data": {
         "l_cd": "C001",
         "l_cd_name": "국내",
-        "m_cd": "202",
-        "m_cd_name": "(국내) 정부/공공기관",
-        "s_cd": "2202",
-        "s_cd_name": "기상청",
-        "menu_cd": "report",
-        "menu_name": "알림·소식 - 보도자료 - 본청",
-        "url": "https://www.kma.go.kr/kma/news/press.jsp",
-        "detail_tag": ".val_m a",
-        "identifier": "num",
+        "m_cd": "204",
+        "m_cd_name": "(국내) 언론사",
+        "s_cd": "2404",
+        "s_cd_name": "ZDNet",
+        "menu_cd": "news",
+        "menu_name": "뉴스 - 최신뉴스",
+        "url": "https://zdnet.co.kr/news/?lstcode=0000",
+        "detail_tag": ".left_cont > .news_box > div > .assetText > a",
+        "identifier": "",
         "page_tag": "page"
     },
     "meta_data": {
-        "title_tag": "h3",
-        "author_tag": ".tit_info em:nth-child(1)",
-        "download_tag": ".td a",
-        "write_date_tag": "em+ em",
-        "contents_tag": ".bbs_view_body",
-        "img_tag": ""
+        "title_tag": ".news_head > h1",
+        "author_tag": ".reporter_info > strong",
+        "download_tag": "",
+        "write_date_tag": "",
+        "contents_tag": "#articleBody p",
+        "img_tag": "figure > span > img"
     },
     "event_data": {}
 }
