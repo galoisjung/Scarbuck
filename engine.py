@@ -35,7 +35,6 @@ class Engine:
                 if inside_url.startswith('/'):
                     p = urlparse(url)
                     inside_url = p.scheme + "://" + p.netloc + inside_url
-                print(inside_url)
 
                 inside_soup = self.get_soup(inside_url, headers)
 
@@ -47,8 +46,6 @@ class Engine:
                 data_dict['write_date'] = write_date
                 contents = self.tag_classifier('contents_tag', inside_soup, meta_data)
                 data_dict['contents'] = contents
-                image = self.tag_classifier('img_tag', inside_soup, meta_data)
-                data_dict['image'] = image
 
                 if meta_data['download_tag'] != "":
                     download = []
@@ -60,6 +57,13 @@ class Engine:
                         download = []
                 else:
                     download = []
+
+                if meta_data['img_tag'] != "":
+                    image_raw = inside_soup.select(meta_data['img_tag'])
+                    if image_raw:
+                        for image_single in image_raw:
+                            download.append(('', image_single['src']))
+
                 data_dict['download'] = download
                 if common_data['identifier'] != "":
                     identifier = common_data['identifier']
@@ -86,7 +90,8 @@ class Engine:
 
         return soup
 
-    def tag_classifier(self, tag, inside_soup, meta_data):
+    @staticmethod
+    def tag_classifier(tag, inside_soup, meta_data):
         if meta_data[tag] != "" and inside_soup.select(meta_data[tag]):
             result = inside_soup.select(meta_data[tag])[0].text
         else:

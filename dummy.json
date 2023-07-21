@@ -19,7 +19,7 @@
         "download_tag": "",
         "write_date_tag": "",
         "contents_tag": "#articleBody p",
-        "img_tag": "figure > span > img"
+        "img_tag": ".img > img"
     },
     "event_data": {}
 }

@@ -31,9 +31,15 @@ class Extractor:
             ext, real_ext = self.extract_extension(file_url[1])
             total_path = file_path + '/' + ext
             os.makedirs(save_path + '/' + total_path, exist_ok=True)
-            download_url = url + file_url[1]
-            file_id = identifier + '-' + str(count) + "." + real_ext
+            real_url = file_url[1]
+            if real_url.startswith('/'):
+                download_url = url + real_url
+            else:
+                download_url = real_url
+            file_id = str(identifier) + '-' + str(count) + "." + real_ext
+            print(file_id)
             final_path = total_path + '/' + file_id
+            print(download_url)
             req.urlretrieve(download_url, save_path + '/' + final_path)
             result['file_name'] = file_url[0]
             result['file_id'] = file_id
@@ -76,6 +82,5 @@ class Extractor:
         result["author"] = self.data_dict['author']
         final_path = save_path + '/' + self.file_path + "/txt"
         os.makedirs(final_path, exist_ok=True)
-        print(final_path)
         with open(final_path + "/meta.json", 'w') as f:
             json.dump(result, f, ensure_ascii=False, indent=4)
