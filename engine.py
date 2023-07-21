@@ -3,11 +3,14 @@ import json
 import requests as requests
 from bs4 import BeautifulSoup as bs
 
+from urllib.parse import urlparse, parse_qs
+
 
 class Engine:
-    def __init__(self, json_data, start_page):
+    def __init__(self, json_data, start_page, end_page=float("inf")):
         self.db_data = json_data
         self.page = start_page
+        self.end_page = end_page
 
     def scraping_contents(self):
         result = []
@@ -20,7 +23,9 @@ class Engine:
             params = {common_data['page_tag']: self.page}
             soup = self.get_soup(url, headers, params)
             a_tags = soup.select(common_data['detail_tag'])
-            if not a_tags:
+            print(self.page)
+            print(self.end_page)
+            if not a_tags or self.page > self.end_page:
                 return result
             for i in a_tags:
                 data_dict = {}
@@ -42,7 +47,7 @@ class Engine:
                     download_raw = inside_soup.select(meta_data['download_tag'])
                     if download_raw:
                         for download_single in download_raw:
-                            download.append(download_single['href'])
+                            download.append((download_single.text, download_single['href']))
                     else:
                         download = []
                 else:
@@ -62,8 +67,12 @@ class Engine:
                     img_tag = inside_soup.select(meta_data['img_tag'])[0].text
                 else:
                     img_tag = ""
+                identifier = common_data['identifier']
+                q = urlparse(inside_url).query
+                identifier = parse_qs(q)[identifier]
+                data_dict['identifier'] = identifier[0]
                 data_dict['img_tag'] = img_tag
-                data_dict['url'] = inside_url
+                data_dict['inside_url'] = inside_url
 
                 result.append(data_dict)
             self.page = self.page + 1
@@ -74,6 +83,7 @@ class Engine:
             params = {}
         respond = requests.get(url=url, headers=headers, params=params)
         if respond.status_code != 200:
+            print(respond.status_code)
             raise Exception("상태코드가 200이 아닙니다.")
         soup = bs(respond.text, 'lxml')
 
