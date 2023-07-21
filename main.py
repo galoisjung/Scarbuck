@@ -3,6 +3,7 @@ import json
 
 import engine
 import extractor
+from send_to_nifi import Sender
 
 with open('dummy.json', encoding='utf-8') as f:
     data = json.load(f)
@@ -14,3 +15,9 @@ for i in a:
     e = extractor.Extractor(data, i, config)
     e.download_file()
     e.save_meta_data()
+    s = Sender(config)
+    file_path = e.get_extracted_file_path()
+    result = e.get_extracted_result()
+    zip_id = result['id']
+    print(file_path)
+    s.zip_files(zip_id, file_path)

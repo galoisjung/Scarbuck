@@ -10,6 +10,8 @@ class Extractor:
         self.config = config
         self.file_path = None
         self.identifier = None
+        self.extracted_file_path = None
+        self.result = None
 
     def download_file(self):
         url = self.data_dict['inside_url']
@@ -37,15 +39,14 @@ class Extractor:
             else:
                 download_url = real_url
             file_id = str(identifier) + '-' + str(count) + "." + real_ext
-            print(file_id)
             final_path = total_path + '/' + file_id
-            print(download_url)
             req.urlretrieve(download_url, save_path + '/' + final_path)
             result['file_name'] = file_url[0]
             result['file_id'] = file_id
             result['file_path'] = final_path
             result['file_size'] = os.path.getsize(save_path + '/' + final_path)
             self.data_dict['attach_file'].append(result)
+        self.extracted_file_path = file_path
 
     def extract_extension(self, file_name):
         ext = file_name.split('.')[-1].lower()
@@ -56,6 +57,12 @@ class Extractor:
             ext = "doc"
 
         return ext, real_ext
+
+    def get_extracted_file_path(self):
+        return self.extracted_file_path
+
+    def get_extracted_result(self):
+        return self.result
 
     def save_meta_data(self):
         result = dict()
@@ -80,6 +87,7 @@ class Extractor:
         result["title"] = self.data_dict['title']
         result["event_date"] = self.data_dict['write_date']
         result["author"] = self.data_dict['author']
+        self.result = result
         final_path = save_path + '/' + self.file_path + "/txt"
         os.makedirs(final_path, exist_ok=True)
         with open(final_path + "/meta.json", 'w') as f:
