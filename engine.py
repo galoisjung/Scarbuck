@@ -21,7 +21,8 @@ class Engine:
         headers = {'User-agent': 'Mozilla/5.0'}
 
         while True:
-            params = {common_data['page_tag']: self.page}
+            #params = {common_data['page_tag']: self.page}
+            params = "page"
             soup = self.get_soup(url, headers, params)
             a_tags = soup.select(common_data['detail_tag'])
             print(self.page)
