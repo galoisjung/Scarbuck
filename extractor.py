@@ -1,6 +1,10 @@
 import json
 import os
 import urllib.request as req
+from time import sleep
+
+import requests
+from fake_useragent import UserAgent
 
 
 class Extractor:
@@ -12,6 +16,9 @@ class Extractor:
         self.identifier = None
         self.extracted_file_path = None
         self.result = None
+        ua = UserAgent(verify_ssl=False)
+        user_agent = ua.random
+        self.header = {'User-agent': '{}'.format(user_agent)}
 
     def download_file(self):
         url = self.data_dict['inside_url']
@@ -40,15 +47,21 @@ class Extractor:
                 download_url = real_url
             file_id = str(identifier) + '-' + str(count) + "." + real_ext
             final_path = total_path + '/' + file_id
-            req.urlretrieve(download_url, save_path + '/' + final_path)
+
+            with open(save_path + '/' + final_path, "wb") as file:
+                response = requests.get(download_url, headers=self.header)
+                file.write(response.content)
+            # req.urlretrieve(download_url, save_path + '/' + final_path)
             result['file_name'] = file_url[0]
             result['file_id'] = file_id
             result['file_path'] = final_path
             result['file_size'] = os.path.getsize(save_path + '/' + final_path)
             self.data_dict['attach_file'].append(result)
+            sleep(0.5)
         self.extracted_file_path = file_path
 
-    def extract_extension(self, file_name):
+    @staticmethod
+    def extract_extension(file_name):
         ext = file_name.split('.')[-1].lower()
         real_ext = ext
         if ext == "jpg" or ext == "png":

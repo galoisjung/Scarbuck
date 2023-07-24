@@ -1,9 +1,11 @@
 import json
+from time import sleep
 
 import requests as requests
 from bs4 import BeautifulSoup as bs
 
 from urllib.parse import urlparse, parse_qs
+from fake_useragent import UserAgent
 import hashlib
 
 
@@ -17,16 +19,36 @@ class Engine:
         result = []
         common_data = self.db_data['common_data']
         meta_data = self.db_data['meta_data']
+        event_data = self.db_data['event_data']
         url = common_data['url']
-        headers = {'User-agent': 'Mozilla/5.0'}
+
+        parsed_url = urlparse(url)
+        params = parse_qs(parsed_url.query)
+        scheme = parsed_url.scheme
+        netloc = parsed_url.netloc
+        path = parsed_url.path
+        ua = UserAgent(verify_ssl=False)
+        user_agent = ua.random
+        headers = {'User-agent': '{}'.format(user_agent)}
 
         while True:
-            #params = {common_data['page_tag']: self.page}
-            params = "page"
-            soup = self.get_soup(url, headers, params)
-            a_tags = soup.select(common_data['detail_tag'])
+            # params = {common_data['page_tag']: self.page}
+
+            if event_data['page_type'] == "query":
+                params[event_data['page_tag']] = [self.page]
+                soup = self.get_soup(url, headers, params)
+                a_tags = soup.select(common_data['detail_tag'])
+            elif event_data['page_type'] == "path":
+                url = scheme + '://' + netloc + path + '/' + event_data['page_tag'].format(self.page)
+                print(url)
+                soup = self.get_soup(url, headers)
+                a_tags = soup.select(common_data['detail_tag'])
+            else:
+                a_tags = []
+            # page detecting
             print(self.page)
             print(self.end_page)
+
             if not a_tags or self.page > self.end_page:
                 return result
             for i in a_tags:
@@ -61,6 +83,7 @@ class Engine:
 
                 if meta_data['img_tag'] != "":
                     image_raw = inside_soup.select(meta_data['img_tag'])
+                    print(image_raw)
                     if image_raw:
                         for image_single in image_raw:
                             download.append(('', image_single['src']))
