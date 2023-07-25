@@ -13,7 +13,7 @@ class Extractor:
         self.data_dict = data_dict
         self.config = config
         self.file_path = None
-        self.identifier = None
+        self.identifier = data_dict['identifier']
         self.extracted_file_path = None
         self.result = None
         ua = UserAgent(verify_ssl=False)
@@ -24,14 +24,12 @@ class Extractor:
         url = self.data_dict['inside_url']
         save_path = self.config['scraping']['save_path']
         common_data = self.db_data['common_data']
-        identifier = self.data_dict['identifier']
-        self.identifier = identifier
         file_path = os.path.join('fcms',
                                  common_data['l_cd'],
                                  common_data['m_cd'],
                                  common_data['s_cd'],
                                  common_data['menu_cd'],
-                                 str(identifier))
+                                 str(self.identifier))
         self.file_path = file_path
         self.data_dict['attach_file'] = []
         # 나중에 count 수정 필요, 경로 관련 정리 필요.
@@ -45,7 +43,7 @@ class Extractor:
                 download_url = url + real_url
             else:
                 download_url = real_url
-            file_id = str(identifier) + '-' + str(count) + "." + real_ext
+            file_id = str(self.identifier) + '-' + str(count) + "." + real_ext
             final_path = total_path + '/' + file_id
 
             with open(save_path + '/' + final_path, "wb") as file:
@@ -76,6 +74,9 @@ class Extractor:
 
     def get_extracted_result(self):
         return self.result
+
+    def get_extracted_identifier(self):
+        return self.identifier
 
     def save_meta_data(self):
         result = dict()

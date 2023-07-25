@@ -8,6 +8,8 @@ from urllib.parse import urlparse, parse_qs
 from fake_useragent import UserAgent
 import hashlib
 
+import duplicate_reducer
+
 
 class Engine:
     def __init__(self, json_data, start_page, end_page=float("inf")):
@@ -15,7 +17,7 @@ class Engine:
         self.page = start_page
         self.end_page = end_page
 
-    def scraping_contents(self):
+    def scraping_contents(self, reducer):
         result = []
         common_data = self.db_data['common_data']
         meta_data = self.db_data['meta_data']
@@ -59,6 +61,16 @@ class Engine:
                     p = urlparse(url)
                     inside_url = p.scheme + "://" + p.netloc + inside_url
 
+                if common_data['identifier'] != "":
+                    identifier = common_data['identifier']
+                    q = urlparse(inside_url).query
+                    identifier = parse_qs(q)[identifier][0]
+                else:
+                    b = bytes(inside_url, 'utf-8')
+                    identifier = int.from_bytes(hashlib.sha256(b).digest()[:4], 'little')
+                data_dict['identifier'] = identifier
+                if reducer.duplicate_checker(identifier):
+                    continue
                 inside_soup = self.get_soup(inside_url, headers)
 
                 title = self.tag_classifier('title_tag', inside_soup, meta_data)
@@ -89,14 +101,7 @@ class Engine:
                             download.append(('', image_single['src']))
 
                 data_dict['download'] = download
-                if common_data['identifier'] != "":
-                    identifier = common_data['identifier']
-                    q = urlparse(inside_url).query
-                    identifier = parse_qs(q)[identifier][0]
-                else:
-                    b = bytes(inside_url, 'utf-8')
-                    identifier = int.from_bytes(hashlib.sha256(b).digest()[:4], 'little')
-                data_dict['identifier'] = identifier
+
                 data_dict['inside_url'] = inside_url
 
                 result.append(data_dict)
